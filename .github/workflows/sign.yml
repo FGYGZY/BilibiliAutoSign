@@ -1,0 +1,30 @@
+name: Bilibili Daily Sign
+
+# 修复点：正确定义 on 事件
+on:
+  schedule:
+    - cron: '0 15 * * *'  # 定时触发（UTC 15:00 = 北京时间 23:00）
+  workflow_dispatch:       # 允许手动触发
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          pip install selenium
+
+      - name: Run sign script
+        env:
+          BILIBILI_COOKIES: ${{ secrets.BILIBILI_COOKIES }}
+        run: python bilibili_sign.py
