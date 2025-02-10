@@ -1,10 +1,9 @@
 name: Bilibili Daily Sign
 
-# 修复点：正确定义 on 事件
 on:
   schedule:
-    - cron: '0 15 * * *'  # 定时触发（UTC 15:00 = 北京时间 23:00）
-  workflow_dispatch:       # 允许手动触发
+    - cron: '0 15 * * *'  # UTC 15:00（北京时间 23:00）
+  workflow_dispatch:
 
 jobs:
   sign:
