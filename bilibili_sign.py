@@ -84,6 +84,11 @@ def check_sign_status(driver):
         elif button_text == "去领取":
             sign_button.click()
             logger.info("点击领取按钮")
+
+            # 刷新页面
+            driver.refresh()
+            time.sleep(3)
+
             # 检查领取成功提示
             WebDriverWait(driver, 15).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "已领取")]'))
