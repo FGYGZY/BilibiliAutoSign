@@ -64,8 +64,45 @@ def send_email(status):
     except Exception as e:
         logger.error(f"邮件发送失败: {str(e)}")
 
+
+def click_sign_button(driver, sign_button):
+    button_text = sign_button.text.strip()
+    logger.info(f"领取按钮文本: {button_text}")
+
+    if button_text == "已领取":
+        return "[Success]今日已领取"
+    elif button_text == "去领取":
+        sign_button.click()
+        logger.info("点击领取按钮")
+
+        try:
+            # 检查领取成功提示
+            WebDriverWait(driver, 15).until(
+                EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "已领取")]'))
+            )
+            logger.info("点击领取成功")
+            return "[Success]领取成功"
+        except:
+            # 检查是否有确认按钮
+            try:
+                confirm_button = WebDriverWait(driver, 15).until(
+                    EC.presence_of_element_located((By.XPATH, '//*[text()="确认"]'))
+                )
+                status_text = driver.find_element(By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[3]/div/div/p[2]').text.strip()
+                logger.info(f"确认弹窗状态文本: {status_text}")
+                if "领取过" in status_text:
+                    return "[Success]今日已领取"
+                elif "网路繁忙" in status_text:
+                    return "[Fail]网络异常"
+                else:
+                    return f"[Fail]未知状态: {status_text}"
+            except:
+                return "[Fail]未找到确认按钮"
+    else:
+        return f"[Fail]未知状态: {button_text}"
+
 def check_sign_status(driver):
-    """检查领取状态"""
+    # 检查领取状态
     try:
         logger.info("访问签到页面")
         driver.get("https://account.bilibili.com/big")
@@ -78,25 +115,20 @@ def check_sign_status(driver):
         )
         button_text = sign_button.text.strip()
         logger.info(f"按钮文本: {button_text}")
-        
-        if button_text == "已领取":
-            return "今日已领取"
-        elif button_text == "去领取":
-            sign_button.click()
-            logger.info("点击领取按钮")
 
-            # 刷新页面
+        # 点击领取按钮
+        status = click_sign_button(driver, sign_button)
+        if "网络异常" in status:
+            logger.info("网络异常，重试一次")
             driver.refresh()
             time.sleep(3)
-
-            # 检查领取成功提示
-            WebDriverWait(driver, 15).until(
-                EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "已领取")]'))
+            sign_button = WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[2]/div[2]'))
             )
-            return "领取成功"
-        else:
-            return f"未知状态: {button_text}"
-            
+            logger.info(f"按钮文本: {button_text}")
+            status = click_sign_button(driver, sign_button)
+
+        return status
     except Exception as e:
         logger.error(f"状态检查失败: {str(e)}")
         return f"错误: {str(e)}"
@@ -118,7 +150,7 @@ def main():
         logger.info(status)
         
         # 如果已领取或失败，发送邮件
-        if "今日已领取" in status or "领取成功" in status or "错误" in status:
+        if "[Success]" in status or "[Fail]" in status:
             send_email(status)
             
     except Exception as e:
