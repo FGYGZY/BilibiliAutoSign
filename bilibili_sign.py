@@ -13,6 +13,26 @@ from email.header import Header
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def load_cookies(driver):
+    """加载 Cookie 并跳转到签到页面"""
+    try:
+        cookies_json = os.getenv("BILIBILI_COOKIES")
+        cookies = json.loads(cookies_json)
+        
+        # 先访问目标域名以设置 Cookie
+        driver.get("https://account.bilibili.com")
+        time.sleep(2)
+        
+        # 添加 Cookie（需覆盖到 account.bilibili.com）
+        for cookie in cookies:
+            # 强制修改 domain 确保匹配
+            cookie["domain"] = ".bilibili.com"  # 使用主域名覆盖
+            driver.add_cookie(cookie)
+        logger.info("Cookie 加载完成")
+    except Exception as e:
+        logger.error(f"Cookie 加载失败: {str(e)}")
+        raise
+
 def send_email(status):
     """发送邮件通知"""
     # 从环境变量读取邮件配置
@@ -32,11 +52,13 @@ def send_email(status):
     message['Subject'] = Header(subject)
 
     try:
-        # 使用 SSL 加密连接
+        # 使用 SSL 加密
         with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, [receiver_email], message.as_string())
         logger.info("邮件发送成功")
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP 错误: {str(e)}")
     except Exception as e:
         logger.error(f"邮件发送失败: {str(e)}")
 
