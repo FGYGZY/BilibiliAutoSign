@@ -53,8 +53,10 @@ def send_email(status):
 
     try:
         # 使用 SSL 加密
+        logger.info("连接到 SMTP 服务器")
         with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
             server.login(sender_email, sender_password)
+            logger.info("登录 SMTP 服务器")
             server.sendmail(sender_email, [receiver_email], message.as_string())
         logger.info("邮件发送成功")
     except smtplib.SMTPException as e:
@@ -65,22 +67,26 @@ def send_email(status):
 def check_sign_status(driver):
     """检查领取状态"""
     try:
+        logger.info("访问签到页面")
         driver.get("https://account.bilibili.com/big")
         time.sleep(3)
         
+        logger.info("等待签到按钮出现")
         # 定位按钮元素（根据实际页面调整选择器）
-        sign_button = WebDriverWait(driver, 15).until(
+        sign_button = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[2]/div[2]'))
         )
         button_text = sign_button.text.strip()
+        logger.info(f"按钮文本: {button_text}")
         
         if button_text == "已领取":
             return "今日已领取"
         elif button_text == "去领取":
             sign_button.click()
+            logger.info("点击领取按钮")
             # 检查领取成功提示
-            WebDriverWait(driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "领取成功")]'))
+            WebDriverWait(driver, 15).until(
+                EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "已领取")]'))
             )
             return "领取成功"
         else:
