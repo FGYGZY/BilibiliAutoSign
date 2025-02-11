@@ -107,11 +107,11 @@ def click_sign_button(driver, sign_button):
 def check_sign_status(driver):
     # 检查领取状态
     try:
-        logger.info("访问签到页面")
+        logger.info("访问领取页面")
         driver.get("https://account.bilibili.com/big")
         time.sleep(3)
         
-        logger.info("等待签到按钮出现")
+        logger.info("等待领取按钮出现")
         # 定位按钮元素（根据实际页面调整选择器）
         sign_button = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[2]/div[2]'))
