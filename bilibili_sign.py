@@ -58,7 +58,7 @@ def send_email(status):
             server.login(sender_email, sender_password)
             logger.info("登录 SMTP 服务器")
             server.sendmail(sender_email, [receiver_email], message.as_string())
-        logger.info("邮件发送成功")
+            logger.info("邮件发送成功")
     except smtplib.SMTPException as e:
         logger.error(f"SMTP 错误: {str(e)}")
     except Exception as e:
@@ -70,6 +70,7 @@ def click_sign_button(driver, sign_button):
     logger.info(f"领取按钮文本: {button_text}")
 
     if button_text == "已领取":
+        logger.info("今日已正常领取")
         return "[Success]今日已领取"
     elif button_text == "去领取":
         sign_button.click()
@@ -86,7 +87,7 @@ def click_sign_button(driver, sign_button):
             # 检查是否有确认按钮
             try:
                 confirm_button = WebDriverWait(driver, 15).until(
-                    EC.presence_of_element_located((By.XPATH, '//*[text()="确认"]'))
+                    EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "确认")]'))
                 )
                 status_text = driver.find_element(By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[3]/div/div/p[2]').text.strip()
                 logger.info(f"确认弹窗状态文本: {status_text}")
@@ -97,6 +98,7 @@ def click_sign_button(driver, sign_button):
                 else:
                     return f"[Fail]未知状态: {status_text}"
             except:
+                logger.info("未找到确认按钮")
                 return "[Fail]未找到确认按钮"
     else:
         return f"[Fail]未知状态: {button_text}"
