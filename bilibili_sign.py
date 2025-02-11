@@ -59,6 +59,7 @@ def send_email(status):
             logger.info("登录 SMTP 服务器")
             server.sendmail(sender_email, [receiver_email], message.as_string())
             logger.info("邮件发送成功")
+            server.quit()
     except smtplib.SMTPException as e:
         logger.error(f"SMTP 错误: {str(e)}")
     except Exception as e:
