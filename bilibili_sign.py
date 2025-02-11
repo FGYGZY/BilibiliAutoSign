@@ -6,69 +6,91 @@ import os
 import json
 import time
 import logging
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def load_cookies(driver):
-    """加载 Cookie 并跳转到签到页面"""
-    try:
-        cookies_json = os.getenv("BILIBILI_COOKIES")
-        cookies = json.loads(cookies_json)
-        
-        # 先访问目标域名以设置 Cookie
-        driver.get("https://account.bilibili.com")
-        time.sleep(2)
-        
-        # 添加 Cookie（需覆盖到 account.bilibili.com）
-        for cookie in cookies:
-            # 强制修改 domain 确保匹配
-            cookie["domain"] = ".bilibili.com"  # 使用主域名覆盖
-            driver.add_cookie(cookie)
-        logger.info("Cookie 加载完成")
-    except Exception as e:
-        logger.error(f"Cookie 加载失败: {str(e)}")
-        raise
+def send_email(status):
+    """发送邮件通知"""
+    # 从环境变量读取邮件配置
+    smtp_host = os.getenv("SMTP_HOST")
+    smtp_port = int(os.getenv("SMTP_PORT"))
+    sender_email = os.getenv("SENDER_EMAIL")
+    sender_password = os.getenv("SENDER_PASSWORD")
+    receiver_email = os.getenv("RECEIVER_EMAIL")
 
-def click_sign_button(driver):
-    """点击签到按钮"""
+    # 构造邮件内容
+    subject = "[DS]B站大会员积分领取状态通知"
+    body = f"领取状态：{status}（时间：{time.strftime('%Y-%m-%d %H:%M:%S')}）"
+
+    message = MIMEText(body, 'plain', 'utf-8')
+    message['From'] = Header(sender_email)
+    message['To'] = Header(receiver_email)
+    message['Subject'] = Header(subject)
+
     try:
-        # 跳转到实际签到页面
+        # 使用 SSL 加密连接
+        with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, [receiver_email], message.as_string())
+        logger.info("邮件发送成功")
+    except Exception as e:
+        logger.error(f"邮件发送失败: {str(e)}")
+
+def check_sign_status(driver):
+    """检查领取状态"""
+    try:
         driver.get("https://account.bilibili.com/big")
         time.sleep(3)
         
-        # 使用你提供的 XPath 定位按钮
+        # 定位按钮元素（根据实际页面调整选择器）
         sign_button = WebDriverWait(driver, 15).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[2]/div[2]'))
+            EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[2]/div[2]'))
         )
-        sign_button.click()
-        logger.info("签到按钮点击成功")
+        button_text = sign_button.text.strip()
         
-        # 验证签到结果（根据实际页面提示调整）
-        time.sleep(2)
-        success_text = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "签到成功")]'))
-        )
-        logger.info(f"签到成功: {success_text.text}")
+        if button_text == "已领取":
+            return "今日已领取"
+        elif button_text == "领取":
+            sign_button.click()
+            # 检查领取成功提示
+            WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "领取成功")]'))
+            )
+            return "领取成功"
+        else:
+            return f"未知状态: {button_text}"
+            
     except Exception as e:
-        logger.error(f"签到失败: {str(e)}")
-        raise
+        logger.error(f"状态检查失败: {str(e)}")
+        return f"错误: {str(e)}"
 
 def main():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    
-    # 修复 Chromium 路径问题（GitHub Actions 环境）
     options.binary_location = "/usr/bin/chromium-browser"
     
     driver = webdriver.Chrome(options=options)
     try:
+        # 加载 Cookie（参考之前的代码）
         load_cookies(driver)
-        click_sign_button(driver)
+        
+        # 检查领取状态并执行
+        status = check_sign_status(driver)
+        logger.info(status)
+        
+        # 如果已领取或失败，发送邮件
+        if "今日已领取" in status or "领取成功" in status or "错误" in status:
+            send_email(status)
+            
     except Exception as e:
-        logger.error(f"脚本执行失败: {str(e)}")
+        logger.error(f"主流程错误: {str(e)}")
+        send_email(f"脚本运行异常: {str(e)}")
         exit(1)
     finally:
         driver.quit()

@@ -26,4 +26,9 @@ jobs:
       - name: Run sign script
         env:
           BILIBILI_COOKIES: ${{ secrets.BILIBILI_COOKIES }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
         run: python bilibili_sign.py
