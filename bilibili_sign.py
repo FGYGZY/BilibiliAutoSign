@@ -76,7 +76,7 @@ def check_sign_status(driver):
         
         if button_text == "已领取":
             return "今日已领取"
-        elif button_text == "领取":
+        elif button_text == "去领取":
             sign_button.click()
             # 检查领取成功提示
             WebDriverWait(driver, 10).until(
