@@ -109,7 +109,7 @@ def check_sign_status(driver):
     try:
         logger.info("访问领取页面")
         driver.get("https://account.bilibili.com/big")
-        time.sleep(3)
+        time.sleep(8)
         
         logger.info("等待领取按钮出现")
         # 定位按钮元素（根据实际页面调整选择器）
@@ -134,7 +134,7 @@ def check_sign_status(driver):
         return status
     except Exception as e:
         logger.error(f"状态检查失败: {str(e)}")
-        return f"错误: {str(e)}"
+        return f"[Fail]错误: {str(e)}"
 
 def main():
     options = webdriver.ChromeOptions()
