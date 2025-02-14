@@ -80,15 +80,16 @@ def click_sign_button(driver, sign_button):
         try:
             # 检查领取成功提示
             WebDriverWait(driver, 15).until(
-                EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "已领取")]'))
+                EC.visibility_of_element_located((By.XPATH, '//*[contains(text(), "领取成功")]'))
             )
+            status_text = driver.find_element(By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[4]/div/div/p[2]/span/span').text.strip()
             logger.info("点击领取成功")
-            return "[Success]领取成功"
+            return f"[Success]领取成功, 还差{status_text}经验(=・ω・=)"
         except:
-            # 检查是否有确认按钮
+            # 检查是否有确定按钮
             try:
                 confirm_button = WebDriverWait(driver, 15).until(
-                    EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "确认")]'))
+                    EC.presence_of_element_located((By.XPATH, '//*[contains(text(), "确定")]'))
                 )
                 status_text = driver.find_element(By.XPATH, '//*[@id="app"]/div/div[7]/div[2]/div[2]/div[1]/div[1]/div[3]/div/div/p[2]').text.strip()
                 logger.info(f"确认弹窗状态文本: {status_text}")
@@ -99,8 +100,8 @@ def click_sign_button(driver, sign_button):
                 else:
                     return f"[Fail]未知状态: {status_text}"
             except:
-                logger.info("未找到确认按钮")
-                return "[Fail]未找到确认按钮"
+                logger.info("未找到确定按钮")
+                return "[Fail]未找到确定按钮"
     else:
         return f"[Fail]未知状态: {button_text}"
 
