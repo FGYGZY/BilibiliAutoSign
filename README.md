@@ -42,7 +42,7 @@
      ```
    - 删去JSON中所有空格和换行，压缩成一行的的形式
    
-   3. **添加 Secrets**  
+3. **添加 Secrets**  
    在你的仓库 *Settings → Secrets and variables → Actions - Repository secerts* 中依次创建：  
 
    | Name | 示例值 | 说明 |
