@@ -16,7 +16,7 @@
 
 ---
 
-## 🚀 快速开始（5 步完成）
+## 🚀 快速开始
 
 1. **Fork 本仓库**
 
@@ -25,20 +25,21 @@
    - 打开 DevTools(F12) → Application → Cookies → `SESSDATA`、`bili_jct` 等  
    - 将 Cookie 转写成 JSON 格式，如：  
      ```js
-    [
-  {
-    "name": "SESSDATA",
-    "value": "<你的SESSDATA值>",
-    "domain": ".bilibili.com",
-    "path": "/"
-  },
-  {
-    "name": "bili_jct",
-    "value": "<你的bili_jct值>",
-    "domain": ".bilibili.com",
-    "path": "/"
-  },
-   ```
+     [
+        {
+            "name": "SESSDATA",
+            "value": "<你的SESSDATA值>",
+            "domain": ".bilibili.com",
+            "path": "/"
+        },
+        {
+            "name": "bili_jct",
+            "value": "<你的bili_jct值>",
+            "domain": ".bilibili.com",
+            "path": "/"
+        },
+     ]
+     ```
    - 删去JSON中所有空格和换行，压缩成一行的的形式
    
    3. **添加 Secrets**  
