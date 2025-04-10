@@ -43,7 +43,7 @@ def send_email(status):
     receiver_email = os.getenv("RECEIVER_EMAIL")
 
     # 构造邮件内容
-    subject = "[DS]B站大会员积分领取状态通知"
+    subject = "[DS]B站大会员积分领取"
     body = f"领取状态：{status}（时间：{time.strftime('%Y-%m-%d %H:%M:%S')}）"
 
     message = MIMEText(body, 'plain', 'utf-8')
