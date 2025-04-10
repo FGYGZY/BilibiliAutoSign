@@ -1,0 +1,8 @@
+## B站大会员每日赠送积分自动领取
+支持领取状态邮件通知，须配置环境变量
+- SMTP_HOST
+- SMTP_POST
+- SENDER_EMAIL
+- SENDER_PASSWORD
+- RECEIVER_EMAIL
+- BILIBILI_COOKIES
